@@ -60,4 +60,38 @@ class SimpleNotification {
           payload, //use when the user tap of the notification and perform some action
     );
   }
+
+  //show periodic notification
+  static Future showPeriodicNotification({
+    required int id,
+    required String title,
+    required String body,
+  }) async {
+    await _flutterLocalNotificationsPlugin.periodicallyShow(
+      id,
+      title,
+      body,
+      RepeatInterval.everyMinute,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          "Periodic Channel",
+          "Periodic Notification",
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode
+          .exactAllowWhileIdle, // it will show the notificatoin even if the mobile is an sleep mode .
+    );
+  }
+
+  //cancel a specific notification
+  static Future cancelSpecificNotification({required int id}) async {
+    await _flutterLocalNotificationsPlugin.cancel(id);
+  }
+
+  //cancel all notification at the same time
+  static Future cancelAllNotification() async {
+    await _flutterLocalNotificationsPlugin.cancelAll();
+  }
 }
