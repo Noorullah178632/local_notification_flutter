@@ -1,8 +1,40 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_local_notification/anotherpage.dart';
+import 'package:flutter_local_notification/main.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:rxdart/subjects.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class SimpleNotification {
   static final FlutterLocalNotificationsPlugin
   _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  //for clicking the notificatoin
+  static final onClickNotification =
+      BehaviorSubject<String>(); //send the latest value to the new listner
+  //we will make a function for the notification whcih being tapped
+  static void onNotificationClick(NotificationResponse response) {
+    // Check if it's a normal tap on the notification itself
+    if (response.actionId == null || response.actionId!.isEmpty) {
+      onClickNotification.add(response.payload!);
+    }
+    // "Interested" button
+    else if (response.actionId == "interested") {
+      Navigator.push(
+        navigatorKey.currentContext!,
+        MaterialPageRoute(
+          builder: (context) => Anotherpage(payload: response.payload!),
+        ),
+      );
+    }
+    // "Not Interested" button
+    else if (response.actionId == "not_interested") {
+      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+        const SnackBar(content: Text("Thanks for your feedback!")),
+      );
+    }
+  }
+
   // initialize the local notification plugin
   static Future init() async {
     // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
@@ -29,7 +61,8 @@ class SimpleNotification {
         );
     _flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse: (detail) => null,
+      onDidReceiveNotificationResponse: onNotificationClick,
+      onDidReceiveBackgroundNotificationResponse: onNotificationClick,
     );
   }
 
@@ -47,6 +80,10 @@ class SimpleNotification {
           importance: Importance.max,
           priority: Priority.high,
           ticker: 'ticker',
+          actions: [
+            AndroidNotificationAction("interested", "Interested"),
+            AndroidNotificationAction("not_interested", "Not Interested"),
+          ],
         );
     const NotificationDetails notificationDetails = NotificationDetails(
       android: androidNotificationDetails,
@@ -80,8 +117,37 @@ class SimpleNotification {
           priority: Priority.high,
         ),
       ),
+
       androidScheduleMode: AndroidScheduleMode
           .exactAllowWhileIdle, // it will show the notificatoin even if the mobile is an sleep mode .
+    );
+  }
+
+  //schedule notification
+  static Future<void> showScheduleNotification({
+    required int id,
+    required String title,
+    required String body,
+    required String payload,
+  }) async {
+    await _flutterLocalNotificationsPlugin.zonedSchedule(
+      id,
+      title,
+      body,
+      tz.TZDateTime.now(tz.local).add(Duration(seconds: 10)),
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          "schedule id",
+          "schedule notification",
+          importance: Importance.high,
+          priority: Priority.high,
+          ticker: "schedule ticker",
+        ),
+      ),
+      payload: payload,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+
+      matchDateTimeComponents: DateTimeComponents.time,
     );
   }
 
