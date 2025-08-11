@@ -7,8 +7,9 @@ import 'package:flutter_local_notification/simple_notification.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SimpleNotification.init();
+
   tz.initializeTimeZones();
+  await SimpleNotification.init();
   runApp(const MyApp());
 }
 

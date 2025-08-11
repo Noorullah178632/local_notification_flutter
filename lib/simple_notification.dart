@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notification/anotherpage.dart';
 import 'package:flutter_local_notification/main.dart';
@@ -14,6 +16,9 @@ class SimpleNotification {
       BehaviorSubject<String>(); //send the latest value to the new listner
   //we will make a function for the notification whcih being tapped
   static void onNotificationClick(NotificationResponse response) {
+    print("Notification clicked");
+    log('Action ID: ${response.actionId}', name: 'Notification');
+    log('Payload: ${response.payload}', name: 'Notification');
     // Check if it's a normal tap on the notification itself
     if (response.actionId == null || response.actionId!.isEmpty) {
       onClickNotification.add(response.payload!);
@@ -115,6 +120,10 @@ class SimpleNotification {
           "Periodic Notification",
           importance: Importance.high,
           priority: Priority.high,
+          actions: [
+            AndroidNotificationAction("interested", "Interested"),
+            AndroidNotificationAction("not_interested", "Not Interested"),
+          ],
         ),
       ),
 
@@ -142,6 +151,10 @@ class SimpleNotification {
           importance: Importance.high,
           priority: Priority.high,
           ticker: "schedule ticker",
+          actions: [
+            AndroidNotificationAction("interested", "Interested"),
+            AndroidNotificationAction("not_interested", "Not Interested"),
+          ],
         ),
       ),
       payload: payload,
